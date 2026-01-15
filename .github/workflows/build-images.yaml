@@ -1,5 +1,9 @@
 name: Docker Image CI
 
+permissions:
+    contents: write
+    packages: write
+
 on:
     push:
         branches: ["main"]
@@ -14,7 +18,7 @@ jobs:
                   fetch-depth: 0
                   fetch-tags: true
 
-                  # Versioning
+            # Versioning
             - name: Calculate version
               id: version
               uses: paulhatch/semantic-version@v5.4.0
@@ -32,6 +36,7 @@ jobs:
             - name: Print the version
               run: echo ${{ steps.version.outputs.version }}
 
+            # Setup docker buildx for multi-arch builds
             - name: Set up QEMU
               uses: docker/setup-qemu-action@v3
 
@@ -44,6 +49,7 @@ jobs:
                   username: baoduy2412
                   password: ${{ secrets.DOCKER_TOKEN }}
 
+            # Build and Push Images
             - name: Build and Push AzureDevOps image (multi-arch)
               uses: docker/build-push-action@v5
               with:
@@ -63,3 +69,15 @@ jobs:
                   tags: |
                       baoduy2412/github-actions-runner:latest
                       baoduy2412/github-actions-runner:${{ env.NEXT_VERSION }}
+
+            #Create Github Release
+            - name: Create Release
+              id: create_release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: v${{ env.NEXT_VERSION }}
+                  release_name: Release v${{ env.NEXT_VERSION }}
+                  draft: false
+                  prerelease: false
