@@ -1,0 +1,27 @@
+name: Docker Image CI
+
+on:
+    push:
+        branches: ["main"]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+                  fetch-tags: true
+
+            - name: Build and Push AzureDevOps image
+              run: |
+                  docker build -f Dockerfile.azure-pipelines -t baoduy2412/azure-devops-runner:latest .
+                  docker login -u baoduy2412 -p ${{ secrets.DOCKER_TOKEN }}
+                  docker push baoduy2412/azure-devops-runner:latest
+
+            - name: Build and Push GitHub Actions image
+              run: |
+                  docker build -f Dockerfile.github -t baoduy2412/github-actions-runner:latest .
+                  docker login -u baoduy2412 -p ${{ secrets.DOCKER_TOKEN }}
+                  docker push baoduy2412/github-actions-runner:latest
