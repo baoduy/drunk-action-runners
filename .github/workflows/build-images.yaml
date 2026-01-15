@@ -1,9 +1,5 @@
 name: Docker Image CI
 
-permissions:
-    contents: write
-    packages: write
-
 on:
     push:
         branches: ["main"]
@@ -12,6 +8,10 @@ on:
 concurrency:
     group: build-images-${{ github.ref }}
     cancel-in-progress: true
+
+permissions:
+    contents: write
+    packages: write
 
 jobs:
     build:
