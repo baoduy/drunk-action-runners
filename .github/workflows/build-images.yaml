@@ -59,21 +59,21 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
 
       # Detect file changes
-      - name: Detect file changes
-        uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          filters: |
-            azure-pipelines:
-                - 'Dockerfile.azure-pipelines'
-                - 'azure-pipelines-agent/**'
-            github:
-                - 'Dockerfile.github'
-                - 'github-actions-runner/**'
+      #- name: Detect file changes
+      #  uses: dorny/paths-filter@v2
+      #  id: changes
+      #  with:
+      #    filters: |
+      #      azure-pipelines:
+      #          - 'Dockerfile.azure-pipelines'
+      #          - 'azure-pipelines-agent/**'
+      #      github:
+      #          - 'Dockerfile.github'
+      #          - 'github-actions-runner/**'
 
       # Build and Push Images
       - name: Build and Push AzureDevOps image (multi-arch)
-        if: steps.changes.outputs.azure-pipelines == 'true'
+        #if: steps.changes.outputs.azure-pipelines == 'true'
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile.azure-pipelines
@@ -84,7 +84,7 @@ jobs:
             ${{ env.DOCKER_USERNAME }}/azure-devops-runner:${{ env.NEXT_VERSION }}
 
       - name: Build and Push GitHub Actions image (multi-arch)
-        if: steps.changes.outputs.github == 'true'
+        #if: steps.changes.outputs.github == 'true'
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile.github
@@ -96,7 +96,7 @@ jobs:
 
       #Create Github Release
       - name: Create Release
-        if: steps.changes.outputs.azure-pipelines == 'true' || steps.changes.outputs.github == 'true'
+        #if: steps.changes.outputs.azure-pipelines == 'true' || steps.changes.outputs.github == 'true'
         id: create_release
         uses: actions/create-release@v1
         env:
