@@ -3,6 +3,7 @@ name: Docker Image CI
 on:
   push:
     branches: ["main"]
+  workflow_dispatch: {}
 
 # Prevent multiple runs and cancel in-progress runs when new commits are pushed
 concurrency:
