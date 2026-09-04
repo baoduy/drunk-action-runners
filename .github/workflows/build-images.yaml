@@ -59,44 +59,48 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
 
       # Detect file changes
-      - name: Detect file changes
-        uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          filters: |
-            azure-pipelines:
-                - 'Dockerfile.azure-pipelines'
-                - 'azure-pipelines-agent/**'
-            github:
-                - 'Dockerfile.github'
-                - 'github-actions-runner/**'
+      #- name: Detect file changes
+      #  uses: dorny/paths-filter@v2
+      #  id: changes
+      #  with:
+      #    filters: |
+      #      azure-pipelines:
+      #          - 'Dockerfile.azure-pipelines'
+      #          - 'azure-pipelines-agent/**'
+      #      github:
+      #          - 'Dockerfile.github'
+      #          - 'github-actions-runner/**'
 
       # Build and Push Images
       - name: Build and Push AzureDevOps image (multi-arch)
-        if: steps.changes.outputs.azure-pipelines == 'true'
+        #if: steps.changes.outputs.azure-pipelines == 'true'
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile.azure-pipelines
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: true
+          cache-from: type=gha,scope=azure-devops-runner
+          cache-to: type=gha,mode=max,scope=azure-devops-runner
           tags: |
             ${{ env.DOCKER_USERNAME }}/azure-devops-runner:latest
             ${{ env.DOCKER_USERNAME }}/azure-devops-runner:${{ env.NEXT_VERSION }}
 
       - name: Build and Push GitHub Actions image (multi-arch)
-        if: steps.changes.outputs.github == 'true'
+        #if: steps.changes.outputs.github == 'true'
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile.github
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: true
+          cache-from: type=gha,scope=github-actions-runner
+          cache-to: type=gha,mode=max,scope=github-actions-runner
           tags: |
             ${{ env.DOCKER_USERNAME }}/github-actions-runner:latest
             ${{ env.DOCKER_USERNAME }}/github-actions-runner:${{ env.NEXT_VERSION }}
 
       #Create Github Release
       - name: Create Release
-        if: steps.changes.outputs.azure-pipelines == 'true' || steps.changes.outputs.github == 'true'
+        #if: steps.changes.outputs.azure-pipelines == 'true' || steps.changes.outputs.github == 'true'
         id: create_release
         uses: actions/create-release@v1
         env:
