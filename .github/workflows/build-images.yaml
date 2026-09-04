@@ -77,8 +77,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile.azure-pipelines
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: true
+          cache-from: type=gha,scope=azure-devops-runner
+          cache-to: type=gha,mode=max,scope=azure-devops-runner
           tags: |
             ${{ env.DOCKER_USERNAME }}/azure-devops-runner:latest
             ${{ env.DOCKER_USERNAME }}/azure-devops-runner:${{ env.NEXT_VERSION }}
@@ -88,8 +90,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile.github
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: true
+          cache-from: type=gha,scope=github-actions-runner
+          cache-to: type=gha,mode=max,scope=github-actions-runner
           tags: |
             ${{ env.DOCKER_USERNAME }}/github-actions-runner:latest
             ${{ env.DOCKER_USERNAME }}/github-actions-runner:${{ env.NEXT_VERSION }}

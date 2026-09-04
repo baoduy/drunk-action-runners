@@ -13,7 +13,7 @@ if [ -z "$AZP_TOKEN_FILE" ]; then
   fi
 
   AZP_TOKEN_FILE=/azp/.token
-  echo -n $AZP_TOKEN > "$AZP_TOKEN_FILE"
+  (umask 077 && printf '%s' "$AZP_TOKEN" > "$AZP_TOKEN_FILE")
 fi
 
 unset AZP_TOKEN
@@ -53,12 +53,24 @@ print_header() {
 # Let the agent ignore the token env variables
 export VSO_AGENT_IGNORE=AZP_TOKEN,AZP_TOKEN_FILE
 
-print_header "1. Determining matching Azure Pipelines agent..."
+# The Azure DevOps package feed wants 'linux-x64' / 'linux-arm64' / 'linux-arm'.
+# Detect at runtime so no build arg has to be threaded through the image.
+case "$(uname -m)" in
+  x86_64)  AZP_AGENT_PLATFORM=linux-x64 ;;
+  aarch64) AZP_AGENT_PLATFORM=linux-arm64 ;;
+  armv7l)  AZP_AGENT_PLATFORM=linux-arm ;;
+  *)
+    echo 1>&2 "error: unsupported architecture $(uname -m)"
+    exit 1
+    ;;
+esac
+
+print_header "1. Determining matching Azure Pipelines agent ($AZP_AGENT_PLATFORM)..."
 
 AZP_AGENT_PACKAGES=$(curl -LsS \
     -u user:$(cat "$AZP_TOKEN_FILE") \
     -H 'Accept:application/json;' \
-    "$AZP_URL/_apis/distributedtask/packages/agent?platform=$TARGETARCH&top=1")
+    "$AZP_URL/_apis/distributedtask/packages/agent?platform=$AZP_AGENT_PLATFORM&top=1")
 
 AZP_AGENT_PACKAGE_LATEST_URL=$(echo "$AZP_AGENT_PACKAGES" | jq -r '.value[0].downloadUrl')
 
